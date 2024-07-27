@@ -7,34 +7,25 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gorilla/mux"
+	"github.com/gofiber/fiber/v2"
 )
 
 func main() {
 	fmt.Println("Server Running")
-	router := mux.NewRouter()
-	router.HandleFunc("/helloapi", helloapi).Methods("GET")
+	app := fiber.New()
+
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.SendString("Hello Venkat")
+	})
+
+	app.Get("/env", func(c *fiber.Ctx) error {
+		return c.SendString("Hellow Env! " + os.Getenv("Test_Env"))
+	})
 
 	port := os.Getenv("PORT")
 
 	if port == "" {
 		port = "3000"
 	}
-	log.Fatal(http.ListenAndServe("0.0.0.0:"+port, router))
-}
-
-func helloapi(w http.ResponseWriter, r *http.Request) {
-	writeMessage(w, http.StatusOK, "Hello venkat")
-}
-
-func writeJson(w http.ResponseWriter, status int, data interface{}) {
-	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(data)
-}
-
-func writeMessage(w http.ResponseWriter, status int, message string) {
-	writeJson(w, status, map[string]string{
-		"message": message,
-	})
+	log.Fatal(app.Listen("0.0.0.0:" + port))
 }
